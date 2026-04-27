@@ -90,8 +90,10 @@ public class SensorReadingService {
         plantSensorRepository.save(sensor);
 
         if (status == SensorStatus.LOW || status == SensorStatus.HIGH || status == SensorStatus.DISCONNECTED) {
-            createAlert(plant, sensor, savedReading, status, value);
-        }
+            createAlertIfNotExists(plant, sensor, savedReading, status, value);
+        } else if (status == SensorStatus.NORMAL) {
+            resolveActiveAlertsForSensor(plant, sensor);
+}
 
         return toResponse(savedReading);
     }
@@ -135,34 +137,47 @@ public class SensorReadingService {
         return SensorStatus.NORMAL;
     }
 
-    private void createAlert(
+        private void createAlertIfNotExists(
             Plant plant,
             PlantSensor sensor,
             SensorReading reading,
             SensorStatus status,
             BigDecimal value
     ) {
+        AlertType alertType = determineAlertType(status);
+
+        boolean activeAlertExists = alertRepository
+                .findFirstByPlantIdAndPlantSensorIdAndAlertTypeAndStatusOrderByCreatedAtDesc(
+                        plant.getId(),
+                        sensor.getId(),
+                        alertType,
+                        AlertStatus.ACTIVE
+                )
+                .isPresent();
+
+        if (activeAlertExists) {
+            return;
+        }
+
         Alert alert = new Alert();
         alert.setPlant(plant);
         alert.setPlantSensor(sensor);
         alert.setSensorReading(reading);
+        alert.setAlertType(alertType);
         alert.setCurrentValue(value);
         alert.setThresholdMin(sensor.getMinThreshold());
         alert.setThresholdMax(sensor.getMaxThreshold());
         alert.setStatus(AlertStatus.ACTIVE);
 
         if (status == SensorStatus.LOW) {
-            alert.setAlertType(AlertType.LOW_VALUE);
             alert.setSeverity(AlertSeverity.WARNING);
             alert.setTitle(sensor.getSensorType().name() + " değeri düşük");
             alert.setMessage("Sensör değeri minimum eşik değerinin altında.");
         } else if (status == SensorStatus.HIGH) {
-            alert.setAlertType(AlertType.HIGH_VALUE);
             alert.setSeverity(AlertSeverity.WARNING);
             alert.setTitle(sensor.getSensorType().name() + " değeri yüksek");
             alert.setMessage("Sensör değeri maksimum eşik değerinin üstünde.");
         } else if (status == SensorStatus.DISCONNECTED) {
-            alert.setAlertType(AlertType.SENSOR_DISCONNECTED);
             alert.setSeverity(AlertSeverity.INFO);
             alert.setTitle(sensor.getSensorType().name() + " sensörü bağlı değil");
             alert.setMessage("Sensör bağlı olmadığı için veri okunamadı.");
@@ -171,25 +186,62 @@ public class SensorReadingService {
         alertRepository.save(alert);
     }
 
-    private void updatePlantHealthStatus(Plant plant) {
-        boolean hasCriticalAlert = alertRepository
-                .findByPlantIdAndStatusOrderByCreatedAtDesc(plant.getId(), AlertStatus.ACTIVE)
-                .stream()
-                .anyMatch(alert -> alert.getSeverity() == AlertSeverity.CRITICAL);
-
-        boolean hasWarningAlert = alertRepository
-                .findByPlantIdAndStatusOrderByCreatedAtDesc(plant.getId(), AlertStatus.ACTIVE)
-                .stream()
-                .anyMatch(alert -> alert.getSeverity() == AlertSeverity.WARNING);
-
-        if (hasCriticalAlert) {
-            plant.setHealthStatus(PlantHealthStatus.CRITICAL);
-        } else if (hasWarningAlert) {
-            plant.setHealthStatus(PlantHealthStatus.WARNING);
-        } else {
-            plant.setHealthStatus(PlantHealthStatus.NORMAL);
+        private AlertType determineAlertType(SensorStatus status) {
+        if (status == SensorStatus.LOW) {
+            return AlertType.LOW_VALUE;
         }
+
+        if (status == SensorStatus.HIGH) {
+            return AlertType.HIGH_VALUE;
+        }
+
+        if (status == SensorStatus.DISCONNECTED) {
+            return AlertType.SENSOR_DISCONNECTED;
+        }
+
+        throw new IllegalArgumentException("Unsupported sensor status for alert: " + status);
     }
+
+        private void resolveActiveAlertsForSensor(Plant plant, PlantSensor sensor) {
+        List<Alert> activeAlerts = alertRepository.findByPlantIdAndPlantSensorIdAndStatus(
+                plant.getId(),
+                sensor.getId(),
+                AlertStatus.ACTIVE
+        );
+
+        activeAlerts.forEach(alert -> {
+            alert.setStatus(AlertStatus.RESOLVED);
+            alert.setResolvedAt(java.time.LocalDateTime.now());
+        });
+
+        alertRepository.saveAll(activeAlerts);
+    }
+
+    private void updatePlantHealthStatus(Plant plant) {
+    List<Alert> activeAlerts = alertRepository.findByPlantIdAndStatusOrderByCreatedAtDesc(
+            plant.getId(),
+            AlertStatus.ACTIVE
+    );
+
+    boolean hasCriticalAlert = activeAlerts.stream()
+            .anyMatch(alert -> alert.getSeverity() == AlertSeverity.CRITICAL);
+
+    boolean hasWarningAlert = activeAlerts.stream()
+            .anyMatch(alert -> alert.getSeverity() == AlertSeverity.WARNING);
+
+    boolean hasInfoAlert = activeAlerts.stream()
+            .anyMatch(alert -> alert.getSeverity() == AlertSeverity.INFO);
+
+    if (hasCriticalAlert) {
+        plant.setHealthStatus(PlantHealthStatus.CRITICAL);
+    } else if (hasWarningAlert) {
+        plant.setHealthStatus(PlantHealthStatus.WARNING);
+    } else if (hasInfoAlert) {
+        plant.setHealthStatus(PlantHealthStatus.WARNING);
+    } else {
+        plant.setHealthStatus(PlantHealthStatus.NORMAL);
+    }
+}
 
     private SensorReadingResponse toResponse(SensorReading reading) {
         PlantSensor sensor = reading.getPlantSensor();
