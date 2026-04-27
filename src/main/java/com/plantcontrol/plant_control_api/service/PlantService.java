@@ -13,6 +13,8 @@ import com.plantcontrol.plant_control_api.repository.PlantRepository;
 import com.plantcontrol.plant_control_api.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.plantcontrol.plant_control_api.exception.ResourceNotFoundException;
+
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -42,7 +44,7 @@ public class PlantService {
     @Transactional(readOnly = true)
     public PlantResponse getPlantById(Long plantId, Long userId) {
         Plant plant = plantRepository.findByIdAndUserId(plantId, userId)
-                .orElseThrow(() -> new RuntimeException("Plant not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Plant not found."));
 
         return toResponse(plant);
     }
@@ -50,7 +52,7 @@ public class PlantService {
     @Transactional
     public PlantResponse createPlant(PlantCreateRequest request, Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
         Plant plant = new Plant();
         plant.setUser(user);
@@ -73,7 +75,7 @@ public class PlantService {
     @Transactional
     public PlantResponse updatePlant(Long plantId, PlantUpdateRequest request, Long userId) {
         Plant plant = plantRepository.findByIdAndUserId(plantId, userId)
-                .orElseThrow(() -> new RuntimeException("Plant not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Plant not found."));
 
         plant.setName(request.getName());
         plant.setPlantType(request.getPlantType());
@@ -90,7 +92,7 @@ public class PlantService {
     @Transactional
     public void deletePlant(Long plantId, Long userId) {
         Plant plant = plantRepository.findByIdAndUserId(plantId, userId)
-                .orElseThrow(() -> new RuntimeException("Plant not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Plant not found."));
 
         /*
          * Şimdilik hard delete yapıyoruz.
