@@ -32,4 +32,6 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
             Long plantSensorId,
             AlertStatus status
     );
+
+    Optional<Alert> findByIdAndPlantUserId(Long alertId, Long userId);
 }
