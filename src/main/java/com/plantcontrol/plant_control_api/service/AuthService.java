@@ -12,6 +12,7 @@ import com.plantcontrol.plant_control_api.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.plantcontrol.plant_control_api.dto.auth.UserProfileResponse;
 
 @Service
 public class AuthService {
@@ -87,4 +88,18 @@ public class AuthService {
                 user.getRole().name()
         );
     }
+    @Transactional(readOnly = true)
+public UserProfileResponse getCurrentUserProfile(Long userId) {
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+
+    return new UserProfileResponse(
+            user.getId(),
+            user.getEmail(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getRole().name(),
+            user.isActive()
+    );
+}
 }
