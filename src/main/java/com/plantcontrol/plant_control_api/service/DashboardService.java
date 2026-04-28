@@ -32,17 +32,17 @@ public class DashboardService {
     public DashboardResponse getDashboard(Long userId) {
         long totalActivePlants = plantRepository.countByUserIdAndIsActiveTrue(userId);
 
-        long normalPlants = plantRepository.countByUserIdAndHealthStatus(
+        long normalPlants = plantRepository.countByUserIdAndHealthStatusAndIsActiveTrue(
                 userId,
                 PlantHealthStatus.NORMAL
         );
 
-        long warningPlants = plantRepository.countByUserIdAndHealthStatus(
+        long warningPlants = plantRepository.countByUserIdAndHealthStatusAndIsActiveTrue(
                 userId,
                 PlantHealthStatus.WARNING
         );
 
-        long criticalPlants = plantRepository.countByUserIdAndHealthStatus(
+        long criticalPlants = plantRepository.countByUserIdAndHealthStatusAndIsActiveTrue(
                 userId,
                 PlantHealthStatus.CRITICAL
         );

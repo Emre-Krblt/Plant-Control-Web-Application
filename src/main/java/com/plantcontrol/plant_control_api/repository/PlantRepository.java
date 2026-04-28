@@ -19,4 +19,9 @@ public interface PlantRepository extends JpaRepository<Plant, Long> {
     long countByUserIdAndIsActiveTrue(Long userId);
 
     long countByUserIdAndHealthStatus(Long userId, PlantHealthStatus healthStatus);
+
+    long countByUserIdAndHealthStatusAndIsActiveTrue(
+        Long userId,
+        PlantHealthStatus healthStatus
+);
 }
