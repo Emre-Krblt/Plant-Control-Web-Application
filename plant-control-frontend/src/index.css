@@ -4,7 +4,7 @@
 
 @layer components {
   .input {
-    @apply rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100;
+    @apply rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 font-normal outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100;
   }
 
   .field-label {
@@ -12,16 +12,53 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-2xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-emerald-950/10 transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-2xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/15 transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-2xl border border-emerald-100 bg-white/85 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm shadow-emerald-950/5 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .glass-panel {
+    @apply border border-white/80 bg-white/80 shadow-xl shadow-emerald-950/10 backdrop-blur;
+  }
+
+  .plant-action {
+    @apply grid min-w-16 place-items-center gap-1 text-xs font-semibold text-slate-800;
+  }
+
+  .plant-action-icon {
+    @apply flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-lg font-bold text-emerald-950 ring-1 ring-emerald-200;
   }
 }
 
 body {
   margin: 0;
   min-width: 320px;
-  background: #f5f8f4;
+  background:
+    linear-gradient(90deg, rgba(229, 240, 222, 0.78), rgba(255, 255, 255, 0.72) 18%, rgba(255, 255, 255, 0.68) 72%, rgba(225, 238, 218, 0.8)),
+    linear-gradient(135deg, #eef5e9 0%, #faf8f2 46%, #e8f0e1 100%);
+}
+
+body::before,
+body::after {
+  position: fixed;
+  inset-block: 0;
+  width: min(20vw, 260px);
+  pointer-events: none;
+  content: '';
+  opacity: 0.28;
+  filter: blur(2px);
+  background:
+    repeating-linear-gradient(78deg, transparent 0 18px, rgba(46, 93, 43, 0.26) 19px 23px, transparent 24px 52px);
+}
+
+body::before {
+  left: 0;
+  transform: skewX(-10deg);
+}
+
+body::after {
+  right: 0;
+  transform: skewX(10deg);
 }
