@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,7 +47,20 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/",
+                                "/index.html",
+                                "/assets/**",
+                                "/login",
+                                "/register",
+                                "/dashboard",
+                                "/plants/**",
+                                "/alerts",
+                                "/profile"
+                        ).permitAll()
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception -> exception
                     .authenticationEntryPoint((request, response, authException) -> {
@@ -110,5 +124,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
-}
+    }
 }

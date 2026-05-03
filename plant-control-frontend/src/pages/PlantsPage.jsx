@@ -47,12 +47,14 @@ function getAgeText(value) {
 
 function CareMeter({ label, value, tone = 'bg-emerald-500' }) {
   return (
-    <div className="grid grid-cols-[84px_1fr_28px] items-center gap-3">
+    <div className="grid grid-cols-[72px_minmax(42px,1fr)_24px] items-center gap-2 sm:grid-cols-[84px_minmax(60px,1fr)_28px] sm:gap-3">
       <span className="text-sm font-semibold text-slate-800">{label}</span>
       <span className="h-2.5 overflow-hidden rounded-full bg-slate-100">
         <span className={`block h-full rounded-full ${tone}`} style={{ width: `${value}%` }} />
       </span>
-      <span className="grid h-7 w-7 place-items-center rounded-full bg-emerald-600 text-xs font-bold text-white">OK</span>
+      <span className="grid h-6 w-6 place-items-center rounded-full bg-emerald-600 text-[10px] font-bold text-white sm:h-7 sm:w-7 sm:text-xs">
+        OK
+      </span>
     </div>
   );
 }
@@ -74,9 +76,9 @@ function PlantCard({ plant, onDelete, deleting }) {
 
   return (
     <article className="glass-panel overflow-hidden rounded-3xl">
-      <div className="grid gap-0 sm:grid-cols-[210px_1fr]">
+      <div className="grid gap-0 md:grid-cols-[180px_minmax(0,1fr)] 2xl:grid-cols-[210px_minmax(0,1fr)]">
         <div className="p-5 pb-0 sm:pb-5">
-          <div className="aspect-[4/5] overflow-hidden rounded-2xl bg-emerald-50 shadow-inner shadow-emerald-950/5">
+          <div className="aspect-[4/5] max-h-64 overflow-hidden rounded-2xl bg-emerald-50 shadow-inner shadow-emerald-950/5 md:max-h-none">
             <PlantImage plant={plant} />
           </div>
           <div className="mx-2 -mt-5 relative">
@@ -87,13 +89,15 @@ function PlantCard({ plant, onDelete, deleting }) {
         </div>
 
         <div className="grid gap-4 p-5">
-          <div className="flex items-start justify-between gap-3">
+          <div className="grid min-w-0 gap-3">
             <div className="min-w-0">
-              <h2 className="truncate text-2xl font-black tracking-tight text-slate-950">{plant.name}</h2>
-              <p className="mt-1 text-lg font-medium text-slate-700">{plant.plantType || 'Unknown plant type'}</p>
+              <h2 className="break-words text-2xl font-black leading-tight tracking-tight text-slate-950">{plant.name}</h2>
+              <p className="mt-1 break-words text-lg font-medium leading-snug text-slate-700">{plant.plantType || 'Unknown plant type'}</p>
               <p className="mt-3 text-sm font-semibold text-slate-500">{plant.location || 'No location assigned'}</p>
             </div>
-            <StatusBadge value={plant.healthStatus} />
+            <div>
+              <StatusBadge value={plant.healthStatus} />
+            </div>
           </div>
 
           <div className="grid gap-1 text-sm leading-6 text-slate-700">
@@ -111,7 +115,7 @@ function PlantCard({ plant, onDelete, deleting }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 border-t border-emerald-100/80 bg-white/72 px-5 py-4">
+      <div className="grid grid-cols-2 gap-3 border-t border-emerald-100/80 bg-white/72 px-5 py-4 sm:grid-cols-4">
         <Link to={`/plants/${plant.id}`} className="plant-action">
           <span className="plant-action-icon">i</span>
           Details

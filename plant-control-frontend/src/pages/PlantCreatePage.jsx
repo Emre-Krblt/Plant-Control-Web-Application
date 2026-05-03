@@ -55,6 +55,41 @@ export default function PlantCreatePage() {
 }
 
 export function PlantForm({ title, subtitle, form, error, submitting, submitLabel, onChange, onSubmit }) {
+  const updateImageValue = (value) => {
+    onChange({
+      target: {
+        name: 'imageUrl',
+        value,
+      },
+    });
+  };
+
+  const handlePhotoChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      window.alert('Please select an image file.');
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      window.alert('Please select an image smaller than 2 MB.');
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      updateImageValue(reader.result || '');
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="grid gap-8">
       <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -89,10 +124,31 @@ export function PlantForm({ title, subtitle, form, error, submitting, submitLabe
                 <input name="plantedDate" type="date" value={form.plantedDate || ''} onChange={onChange} className="input" />
               </label>
             </div>
-            <label className="field-label">
-              Image URL
-              <input name="imageUrl" value={form.imageUrl || ''} onChange={onChange} className="input" placeholder="https://..." />
-            </label>
+            <div className="grid gap-3">
+              <span className="field-label">
+                Plant photo
+                <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-emerald-200 bg-emerald-50/45 px-6 py-8 text-center transition hover:border-emerald-400 hover:bg-emerald-50">
+                  <span className="grid h-14 w-14 place-items-center rounded-full bg-white text-2xl font-black text-emerald-800 shadow-sm shadow-emerald-950/5">
+                    +
+                  </span>
+                  <span>
+                    <span className="block text-base font-black text-slate-950">Choose photo from computer</span>
+                    <span className="mt-1 block text-sm font-medium text-slate-500">PNG, JPG, or WEBP up to 2 MB</span>
+                  </span>
+                  <input type="file" accept="image/*" onChange={handlePhotoChange} className="sr-only" />
+                </label>
+              </span>
+
+              {form.imageUrl && (
+                <button
+                  type="button"
+                  onClick={() => updateImageValue('')}
+                  className="justify-self-start rounded-2xl border border-red-100 bg-red-50 px-4 py-2 text-sm font-bold text-red-700 transition hover:bg-red-100"
+                >
+                  Remove photo
+                </button>
+              )}
+            </div>
             <label className="field-label">
               Description
               <textarea
